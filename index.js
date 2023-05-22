@@ -1,18 +1,10 @@
 const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
-
 const port = process.env.PORT || 3001;
-
 const UserRoute = require("./routes/users");
-const BannerRoute = require("./routes/banner");
-const AttributeRoute = require("./routes/attribute");
-const ProductSchema = require("./routes/product");
-const SectionSchema = require("./routes/section");
-const CategorySchema = require("./routes/category");
-const ReviewSchema = require("./routes/review");
-const FaqSchema = require("./routes/faq");
-const LocationSchema = require("./routes/location");
+const FolderRoute = require("./routes/folder");
+
 
 
 const app = express();
@@ -21,7 +13,7 @@ const cors = require("cors");
 const username = "bigbeat";
 const password = "bigbeat123";
 const cluster = "<cluster name>";
-const dbname = "bigbeat";
+const dbname = "drive-app";
 
 
 
@@ -35,14 +27,8 @@ app.use((req, res, next) => {
 
 
 app.use("/user", UserRoute);
-app.use("/banner", BannerRoute);
-app.use("/attribute", AttributeRoute);
-app.use("/product", ProductSchema);
-app.use("/section", SectionSchema);
-app.use("/category", CategorySchema);
-app.use("/review", ReviewSchema);
-app.use("/location", LocationSchema);
-app.use("/faq", FaqSchema);
+app.use("/folder", FolderRoute);
+
 
 // const mongoUrl = `mongodb+srv://${username}:${password}@cluster0.a1hrtd3.mongodb.net/${dbname}?retryWrites=true&w=majority`;
 const mongoUrl = `mongodb://${username}:${password}@ac-vwmr06o-shard-00-00.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-01.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-02.a1hrtd3.mongodb.net:27017/${dbname}?ssl=true&replicaSet=atlas-drspkn-shard-0&authSource=admin&retryWrites=true&w=majority`;
