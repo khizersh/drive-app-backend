@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/UserSchema");
+const Sidebar = require("../models/SidebarSchema");
 const OTP = require("../models/OtpSchema");
 const Folder = require("../models/FolderSchema");
 const { validateEmail, generateOtp } = require("../service/commonService");
@@ -55,11 +56,32 @@ router.post("/upload", async (req, res) => {
               : 1;
           }
           parentFolder.save();
+
+
+        //   ================ sidebar =====================
+
         } else {
           body.folderPath = [];
           const data = await body.save();
           data.folderPath.push({ name: body.name, id: data._id });
-          await data.save();
+          const db = await data.save();
+
+          //   ============== sidebar ======================
+
+          if (db.isFolder) {
+            const sidebar = new Sidebar();
+            sidebar.name = data.name;
+            sidebar.userId = data.userId;
+            sidebar.description = data.description;
+            sidebar.rootFolder = data.rootFolder;
+            sidebar.label = data.name;
+            sidebar.Icon = Public;
+            sidebar.items = [];
+            sidebar.parentId = [];
+            sidebar.resourcesCount = 0;
+            sidebar.folderCount = 0;
+            sidebar.save();
+          }
         }
         res
           .send({
@@ -90,9 +112,8 @@ router.post("/getResourceByUser", async (req, res) => {
       if (user) {
         const folders = await Folder.find({
           userId: user._id,
-          // rootFolder: true,
-        })
-        // }).populate("children");
+          rootFolder: true,
+        }).populate("children");
         res
           .send({ status: SUCCESS_CODE, message: "success", data: folders })
           .status(200);
@@ -106,6 +127,31 @@ router.post("/getResourceByUser", async (req, res) => {
       .status(200);
   }
 });
+
+router.post("/getAllResourceByUser", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.email) {
+      const user = await User.findOne({ email: body.email });
+      if (user) {
+        const folders = await Folder.find({
+          userId: user._id,
+        });
+        res
+          .send({ status: SUCCESS_CODE, message: "success", data: folders })
+          .status(200);
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+      }
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/getResourceByFolder", async (req, res) => {
   const body = req.body;
 

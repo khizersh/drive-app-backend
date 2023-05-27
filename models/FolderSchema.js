@@ -9,6 +9,10 @@ const FolderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: false,
+  },
   rootFolder: {
     type: Boolean,
     require: true,
@@ -27,7 +31,8 @@ const FolderSchema = new mongoose.Schema({
   },
   children: [
     {
-      type: mongoose.Schema.Types.Array,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "folder",
     },
   ],
   parentId: {
