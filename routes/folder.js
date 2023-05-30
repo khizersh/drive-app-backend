@@ -91,7 +91,7 @@ router.post("/getResourceByUser", async (req, res) => {
         const folders = await Folder.find({
           userId: user._id,
           // rootFolder: true,
-        })
+        });
         // }).populate("children");
         res
           .send({ status: SUCCESS_CODE, message: "success", data: folders })
@@ -99,6 +99,32 @@ router.post("/getResourceByUser", async (req, res) => {
       } else {
         res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
       }
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+router.post("/getResourcesByRootParent", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.homeParentId && body.email) {
+      const user = await User.findOne({ email: body.email });
+      if (user) {
+        const folders = await Folder.find({
+          homeParentId: body.homeParentId,
+          userId: user._id,
+        }).populate("children");
+        res
+          .send({ status: SUCCESS_CODE, message: "success", data: folders })
+          .status(200);
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+      }
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
     }
   } catch (error) {
     res

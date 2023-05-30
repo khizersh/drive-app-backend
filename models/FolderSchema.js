@@ -17,13 +17,17 @@ const FolderSchema = new mongoose.Schema({
     type: Boolean,
     require: true,
   },
+  homeParentId: {
+    type: String,
+    require: false,
+  },
   isFolder: {
     type: Boolean,
     require: true,
   },
   file: {
     type: String,
-    require: true,
+    require: false,
   },
   folderImage: {
     type: String,
