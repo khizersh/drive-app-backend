@@ -207,11 +207,11 @@ router.post("/getResourcesByRootParent", async (req, res) => {
             isFolder: body.isFolder,
             userId: user._id,
           }).populate("children");
-        }else{
+        } else {
           folders = await Folder.find({
             homeParentId: body.homeParentId,
             userId: user._id,
-            parentId:""
+            parentId: "",
           }).populate("children");
         }
         res
@@ -224,7 +224,7 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
     }
   } catch (error) {
-    console.log("error : ",error);
+    console.log("error : ", error);
     res
       .send({ status: ERROR_CODE, message: "Something went wrong!" })
       .status(200);
@@ -237,10 +237,40 @@ router.post("/getResourceByFolder", async (req, res) => {
     if (body.parentId) {
       const folders = await Folder.find({
         parentId: body.parentId,
-      }).populate("children");
+        // }).populate("children");
+      });
       res
         .send({ status: SUCCESS_CODE, message: "success", data: folders })
         .status(200);
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
+router.post("/getResourceByKeyword", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.homeParentId && body.keyword && body.email) {
+      const user = await User.findOne({ email: body.email });
+      if (user) {
+        const folders = await Folder.find({
+          homeParentId: body.homeParentId,
+        });
+        const filtered = folders.filter((m) =>
+          m.name.toLowerCase().includes(body.keyword.toLowerCase())
+        );
+        res
+          .send({ status: SUCCESS_CODE, message: "success", data: filtered })
+          .status(200);
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+      }
     } else {
       res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
     }
