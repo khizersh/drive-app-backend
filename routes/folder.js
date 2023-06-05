@@ -251,6 +251,47 @@ router.post("/getResourceByFolder", async (req, res) => {
       .status(200);
   }
 });
+router.post("/getResourceById", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.id) {
+      const folder = await Folder.findById({
+        _id: body.id,
+      });
+      res
+        .send({ status: SUCCESS_CODE, message: "success", data: folder })
+        .status(200);
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+router.post("/getResourceByFolder", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.parentId) {
+      const folders = await Folder.find({
+        parentId: body.parentId,
+        // }).populate("children");
+      });
+      res
+        .send({ status: SUCCESS_CODE, message: "success", data: folders })
+        .status(200);
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
 
 router.post("/getResourceByKeyword", async (req, res) => {
   const body = req.body;
