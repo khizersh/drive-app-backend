@@ -54,13 +54,20 @@ router.post("/upload", upload, async (req, res) => {
                 .send({ status: ERROR_CODE, message: "Something went wrong!" })
                 .status(200);
             }
-            console.log("data : ", data);
+            body.mimeType = req.file.mimetype;
+            body.fileType = fileType;
             body.file = data.Location;
             const date =
               user.firstName +
               ", " +
               moment(new Date()).format().split("+")[0].split("T").join(" | ");
+            let create = moment(new Date())
+              .format()
+              .split("+")[0]
+              .split("T")[0];
+            body.createdDate = create;
             body.addedBy = date;
+            body.fileSize = body.fileSize
             body.lastUpdatedBy = date;
             if (body.parentId) {
               const parentFolder = await Folder.findById({
@@ -230,6 +237,31 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       .status(200);
   }
 });
+router.post("/saveDate", async (req, res) => {
+  const body = req.body;
+
+  try {
+    const folder = await Folder.find();
+    folder.map((m , index) => {
+      let create = moment(new Date()).format().split("+")[0].split("T")[0];
+      m.createdDate = create;
+      if(index < 4){
+        m.mimeType = "image/png"
+      }else{
+        m.mimeType = "video/mp4"
+      }
+      m.save();
+    });
+
+    res.send({ status: SUCCESS_CODE, message: "Save!" }).status(200);
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/getResourceByFolder", async (req, res) => {
   const body = req.body;
 

@@ -55,6 +55,14 @@ const FolderSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+  createdDate: {
+    type: String,
+    require: false,
+  },
+  mimeType: {
+    type: String,
+    require: false,
+  },
   lastUpdatedBy: {
     type: String,
     require: true,
