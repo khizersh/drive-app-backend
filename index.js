@@ -5,6 +5,7 @@ const port = process.env.PORT || 3001;
 const UserRoute = require("./routes/users");
 const FolderRoute = require("./routes/folder");
 const FileRoute = require("./routes/fileUpload");
+const CollectionRoute = require("./routes/collection");
 
 
 
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
 app.use("/user", UserRoute);
 app.use("/folder", FolderRoute);
 app.use("/file",FileRoute );
+app.use("/collection",CollectionRoute );
 
 
 // const mongoUrl = `mongodb+srv://${username}:${password}@cluster0.a1hrtd3.mongodb.net/${dbname}?retryWrites=true&w=majority`;
