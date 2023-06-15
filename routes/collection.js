@@ -55,6 +55,28 @@ router.post("/getAll", async (req, res) => {
       .status(200);
   }
 });
+router.post("/getAllByEmail", async (req, res) => {
+  const body = new Collection(req.body);
+
+  try {
+    if (body.email) {
+      const resp = await Collection.find({ email: body.email }).populate(
+        "resource"
+      );
+   
+      res
+        .send({ status: SUCCESS_CODE, message: "success", data: resp })
+        .status(200);
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+    }
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
 
 router.post("/getCollectionById", async (req, res) => {
   const body = new Collection(req.body);
