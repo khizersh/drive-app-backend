@@ -84,9 +84,14 @@ router.post("/getCollectionById", async (req, res) => {
   try {
     if (body.resourceId) {
       const resp = await Collection.findOne({ resource: body.resourceId });
-      res
-        .send({ status: SUCCESS_CODE, message: "success", data: resp })
-        .status(200);
+      if(resp){
+        res
+          .send({ status: SUCCESS_CODE, message: "success", data: resp })
+          .status(200);
+
+      }else{
+        res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+      }
     } else {
       res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
     }

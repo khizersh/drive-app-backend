@@ -6,6 +6,9 @@ const OTP = require("../models/OtpSchema");
 const Folder = require("../models/FolderSchema");
 const { validateEmail, generateOtp } = require("../service/commonService");
 const { sendEmail } = require("../service/emailService");
+const { createCanvas, loadImage, Image } = require('canvas');
+const psd = require('psd');
+const axios = require('axios');
 const {
   USER_REGISTER_OTP_SUBJECT,
   SUCCESS_CODE,
@@ -380,6 +383,74 @@ router.post("/getAllFile", async (req, res) => {
     res
       .send({ status: ERROR_CODE, message: "Something went wrong!" })
       .status(200);
+  }
+});
+
+
+
+// Server-side route handling the download request
+router.post('/downloadImage', async (req, res) => {
+  try {
+    // Get the requested format from the query parameters
+    const { format , url } = req.body;
+
+    // Fetch the image data from a provided URL
+    const imageUrl = url;
+    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    // // const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    // const response = await fs.promises.readFile(path.join(imageUrl));
+    const imageData = response.data;
+
+    let fileBuffer;
+    let contentType;
+
+    // Convert and generate the image file based on the requested format
+    if (format === 'png') {
+      // Convert the image to PNG format using the 'canvas' package
+      const img = new Image();
+      img.src = Buffer.from(imageData);
+      const canvas = createCanvas(img.width, img.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      fileBuffer = canvas.toBuffer();
+      contentType = 'image/png';
+    } else if (format === 'jpeg') {
+      // Convert the image to JPEG format using the 'canvas' package
+      const img = new Image();
+      img.src = Buffer.from(imageData);
+      const canvas = createCanvas(img.width, img.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      fileBuffer = canvas.toBuffer('image/jpeg');
+      contentType = 'image/jpeg';
+    }
+    else if (format === 'svg') {
+      // Convert the image to JPEG format using the 'canvas' package
+      const img = new Image();
+      img.src = Buffer.from(imageData);
+      const canvas = createCanvas(img.width, img.height , "svg");
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      fileBuffer = canvas.toBuffer('image/svg');
+      contentType = 'image/webp';
+    }  else if (format === 'psd') {
+      // Generate the PSD file using the 'psd' package
+      const psdFile = psd.fromDIB(imageData);
+
+      fileBuffer = psdFile.toBuffer();
+      contentType = 'image/vnd.adobe.photoshop';
+    } else {
+      return res.status(400).send('Invalid format');
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename="image.${format}"`);
+    res.setHeader('Accept-Ranges', `bytes`);
+    res.setHeader('Content-Type', contentType);
+    var base64data = new Buffer(fileBuffer).toString('base64');
+    res.send(base64data);
+  } catch (error) {
+    console.error('Error generating image file:', error);
+    res.status(500).send('Error generating image file');
   }
 });
 
