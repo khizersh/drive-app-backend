@@ -6,9 +6,10 @@ const OTP = require("../models/OtpSchema");
 const Folder = require("../models/FolderSchema");
 const { validateEmail, generateOtp } = require("../service/commonService");
 const { sendEmail } = require("../service/emailService");
-const { createCanvas, loadImage, Image } = require('canvas');
-const psd = require('psd');
-const axios = require('axios');
+const { createCanvas, loadImage, Image } = require("canvas");
+const psd = require("psd");
+const axios = require("axios");
+const sharp = require("sharp");
 const {
   USER_REGISTER_OTP_SUBJECT,
   SUCCESS_CODE,
@@ -34,7 +35,6 @@ const storage = multer.memoryStorage({
 });
 
 const upload = multer({ storage }).single("file");
-
 
 router.post("/upload", upload, async (req, res) => {
   const reqBody = JSON.parse(req.body.data);
@@ -71,7 +71,7 @@ router.post("/upload", upload, async (req, res) => {
               .split("T")[0];
             body.createdDate = create;
             body.addedBy = date;
-            body.fileSize = body.fileSize
+            body.fileSize = body.fileSize;
             body.lastUpdatedBy = date;
             if (body.parentId) {
               const parentFolder = await Folder.findById({
@@ -246,13 +246,13 @@ router.post("/saveDate", async (req, res) => {
 
   try {
     const folder = await Folder.find();
-    folder.map((m , index) => {
+    folder.map((m, index) => {
       let create = moment(new Date()).format().split("+")[0].split("T")[0];
       m.createdDate = create;
-      if(index < 4){
-        m.mimeType = "image/png"
-      }else{
-        m.mimeType = "video/mp4"
+      if (index < 4) {
+        m.mimeType = "image/png";
+      } else {
+        m.mimeType = "video/mp4";
       }
       m.save();
     });
@@ -386,17 +386,15 @@ router.post("/getAllFile", async (req, res) => {
   }
 });
 
-
-
 // Server-side route handling the download request
-router.post('/downloadImage', async (req, res) => {
+router.post("/downloadImage", async (req, res) => {
   try {
     // Get the requested format from the query parameters
-    const { format , url } = req.body;
+    const { format, url } = req.body;
 
     // Fetch the image data from a provided URL
     const imageUrl = url;
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
     // // const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
     // const response = await fs.promises.readFile(path.join(imageUrl));
     const imageData = response.data;
@@ -405,52 +403,89 @@ router.post('/downloadImage', async (req, res) => {
     let contentType;
 
     // Convert and generate the image file based on the requested format
-    if (format === 'png') {
+    if (format === "png") {
       // Convert the image to PNG format using the 'canvas' package
       const img = new Image();
       img.src = Buffer.from(imageData);
       const canvas = createCanvas(img.width, img.height);
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
       fileBuffer = canvas.toBuffer();
-      contentType = 'image/png';
-    } else if (format === 'jpeg') {
+      contentType = "image/png";
+    } else if (format === "jpeg") {
       // Convert the image to JPEG format using the 'canvas' package
       const img = new Image();
       img.src = Buffer.from(imageData);
       const canvas = createCanvas(img.width, img.height);
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      fileBuffer = canvas.toBuffer('image/jpeg');
-      contentType = 'image/jpeg';
-    }
-    else if (format === 'svg') {
+      fileBuffer = canvas.toBuffer("image/jpeg");
+      contentType = "image/jpeg";
+    } else if (format === "svg") {
       // Convert the image to JPEG format using the 'canvas' package
       const img = new Image();
       img.src = Buffer.from(imageData);
-      const canvas = createCanvas(img.width, img.height , "svg");
-      const ctx = canvas.getContext('2d');
+      const canvas = createCanvas(img.width, img.height, "svg");
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      fileBuffer = canvas.toBuffer('image/svg');
-      contentType = 'image/webp';
-    }  else if (format === 'psd') {
+      fileBuffer = canvas.toBuffer("image/svg");
+      contentType = "image/webp";
+    } else if (format === "psd") {
       // Generate the PSD file using the 'psd' package
       const psdFile = psd.fromDIB(imageData);
 
       fileBuffer = psdFile.toBuffer();
-      contentType = 'image/vnd.adobe.photoshop';
+      contentType = "image/vnd.adobe.photoshop";
     } else {
-      return res.status(400).send('Invalid format');
+      return res.status(400).send("Invalid format");
     }
 
-    res.setHeader('Content-Disposition', `attachment; filename="image.${format}"`);
-    res.setHeader('Accept-Ranges', `bytes`);
-    res.setHeader('Content-Type', contentType);
-    var base64data = new Buffer(fileBuffer).toString('base64');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="image.${format}"`
+    );
+    res.setHeader("Accept-Ranges", `bytes`);
+    res.setHeader("Content-Type", contentType);
+    var base64data = new Buffer(fileBuffer).toString("base64");
     res.send(base64data);
   } catch (error) {
-    console.error('Error generating image file:', error);
-    res.status(500).send('Error generating image file');
+    console.error("Error generating image file:", error);
+    res.status(500).send("Error generating image file");
+  }
+});
+router.post("/downloadImageWithSize", async (req, res) => {
+  try {
+    // Get the requested format from the query parameters
+    const { format, url, width, height } = req.body;
+    try {
+      const response = await axios.get(url, {
+        responseType: "arraybuffer",
+      });
+      const imageData = response.data;
+      const data = await sharp(imageData)
+        .resize({
+          width: width,
+          height: height,
+        })
+        .toFormat(format)
+        .toBuffer();
+       let contentType = 'image/' + format;
+       res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="image.${format}"`
+      );
+      res.setHeader("Accept-Ranges", `bytes`);
+      res.setHeader("Content-Type", contentType);
+      var base64data = new Buffer(data).toString("base64");
+      return res.send(base64data);
+    
+    } catch (error) {
+      console.log(error);
+    }
+ 
+  } catch (error) {
+    console.error("Error generating image file:", error);
+    res.status(500).send("Error generating image file");
   }
 });
 
