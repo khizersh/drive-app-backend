@@ -177,6 +177,78 @@ router.post("/upload", upload, async (req, res) => {
   }
 });
 
+router.post("/delete", upload, async (req, res) => {
+  const body = req.body;
+  try {
+    if (body.userId) {
+      const user = await User.findById({ _id: body.userId });
+      if (user != null) {
+        const file = await Folder.find({ _id: body.id, userId: body.userId });
+        if (file) {
+          await Folder.deleteOne({ _id: body.id });
+          res
+            .send({ status: SUCCESS_CODE, message: "Deleted successfully!" })
+            .status(200);
+        } else {
+          res
+            .send({ status: ERROR_CODE, message: "Invalid Call!" })
+            .status(200);
+        }
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+      }
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+    }
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+router.post("/edit", upload, async (req, res) => {
+  const body = req.body;
+  try {
+    if (body.userId) {
+      const user = await User.findById({ _id: body.userId });
+      if (user != null) {
+        const file = await Folder.findOne({
+          _id: body.id,
+          userId: body.userId,
+        });
+        if (file) {
+          if (body.name) {
+            file.name = body.name;
+            await file.save();
+            res
+              .send({ status: SUCCESS_CODE, message: "Edit successfully!" })
+              .status(200);
+          } else {
+            res
+            .send({ status: ERROR_CODE, message: "Enter valid name!" })
+            .status(200);
+          }
+         
+        } else {
+          res
+            .send({ status: ERROR_CODE, message: "Invalid Call!" })
+            .status(200);
+        }
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+      }
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+    }
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/getResourceByUser", async (req, res) => {
   const body = req.body;
 
@@ -358,6 +430,33 @@ router.post("/getResourceByKeyword", async (req, res) => {
   }
 });
 
+router.post("/getResourceByKeywordAll", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.keyword && body.email) {
+      const user = await User.findOne({ email: body.email });
+      if (user) {
+        const folders = await Folder.find();
+        const filtered = folders.filter((m) =>
+          m.name.toLowerCase().includes(body.keyword.toLowerCase())
+        );
+        res
+          .send({ status: SUCCESS_CODE, message: "success", data: filtered })
+          .status(200);
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+      }
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/getAllFile", async (req, res) => {
   const otp = new OTP(req.body);
 
@@ -469,8 +568,8 @@ router.post("/downloadImageWithSize", async (req, res) => {
         })
         .toFormat(format)
         .toBuffer();
-       let contentType = 'image/' + format;
-       res.setHeader(
+      let contentType = "image/" + format;
+      res.setHeader(
         "Content-Disposition",
         `attachment; filename="image.${format}"`
       );
@@ -478,11 +577,9 @@ router.post("/downloadImageWithSize", async (req, res) => {
       res.setHeader("Content-Type", contentType);
       var base64data = new Buffer(data).toString("base64");
       return res.send(base64data);
-    
     } catch (error) {
       console.log(error);
     }
- 
   } catch (error) {
     console.error("Error generating image file:", error);
     res.status(500).send("Error generating image file");

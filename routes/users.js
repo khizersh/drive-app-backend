@@ -125,6 +125,7 @@ router.post("/delete", async (req, res) => {
       .status(200);
   }
 });
+
 router.post("/approve", async (req, res) => {
   const request = req.body;
 
@@ -153,11 +154,52 @@ router.post("/approve", async (req, res) => {
       .status(200);
   }
 });
+router.post("/updatePermission", async (req, res) => {
+  const { email, permissions } = req.body;
+
+  try {
+    if (email && permissions) {
+      const user = await User.findOne({ email: email });
+      if (user) {
+        user.permissions = permissions;
+        user.save();
+        res
+          .send({ status: SUCCESS_CODE, message: "Permission updated!" })
+          .status(200);
+      } else {
+        res
+          .send({ status: ERROR_CODE, message: "User doesn't exist!" })
+          .status(200);
+      }
+    } else {
+      res
+        .send({ status: ERROR_CODE, message: "User doesn't exist!" })
+        .status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
 
 router.get("/get-unverified", async (req, res) => {
   let body = req.body;
   try {
     const data = await User.find({ verified: false });
+    res
+      .send({ status: SUCCESS_CODE, message: "success", data: data })
+      .status(200);
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+router.get("/get-all", async (req, res) => {
+  let body = req.body;
+  try {
+    const data = await User.find();
     res
       .send({ status: SUCCESS_CODE, message: "success", data: data })
       .status(200);
