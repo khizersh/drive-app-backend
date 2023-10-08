@@ -39,6 +39,7 @@ const upload = multer({ storage }).single("file");
 router.post("/upload", upload, async (req, res) => {
   const reqBody = JSON.parse(req.body.data);
   const body = new Folder(reqBody);
+  var resourceId = "";
   try {
     if (body.userId) {
       const user = await User.findById({ _id: body.userId });
@@ -84,6 +85,7 @@ router.post("/upload", upload, async (req, res) => {
                 });
               }
               const fold = await body.save();
+              resourceId = fold._id;
               fold.folderPath.push({ name: body.name, id: fold._id });
               await fold.save();
               if (parentFolder?.children?.length) {
@@ -107,11 +109,14 @@ router.post("/upload", upload, async (req, res) => {
               const data = await body.save();
               data.folderPath.push({ name: body.name, id: data._id });
               await data.save();
+              resourceId = data._id;
             }
+
             res
               .send({
                 status: SUCCESS_CODE,
                 message: "Resource created successfully!",
+                resourceId: resourceId,
               })
               .status(200);
           });
@@ -132,6 +137,7 @@ router.post("/upload", upload, async (req, res) => {
               });
             }
             const fold = await body.save();
+            resourceId = fold._id;
             fold.folderPath.push({ name: body.name, id: fold._id });
             await fold.save();
             if (parentFolder?.children?.length) {
@@ -153,6 +159,7 @@ router.post("/upload", upload, async (req, res) => {
           } else {
             body.folderPath = [];
             const data = await body.save();
+            resourceId = data._id;
             data.folderPath.push({ name: body.name, id: data._id });
             await data.save();
           }
@@ -160,6 +167,7 @@ router.post("/upload", upload, async (req, res) => {
             .send({
               status: SUCCESS_CODE,
               message: "Resource created successfully!",
+              resourceId: resourceId,
             })
             .status(200);
         }
@@ -226,10 +234,9 @@ router.post("/edit", upload, async (req, res) => {
               .status(200);
           } else {
             res
-            .send({ status: ERROR_CODE, message: "Enter valid name!" })
-            .status(200);
+              .send({ status: ERROR_CODE, message: "Enter valid name!" })
+              .status(200);
           }
-         
         } else {
           res
             .send({ status: ERROR_CODE, message: "Invalid Call!" })

@@ -96,6 +96,10 @@ const UserSchema = new mongoose.Schema({
     type: Array,
     require: false,
   },
+  resourcePermissions: {
+    type: Array,
+    require: false,
+  },
 });
 
 const User = mongoose.model("users", UserSchema);

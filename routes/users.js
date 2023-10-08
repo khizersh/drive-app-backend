@@ -183,6 +183,48 @@ router.post("/updatePermission", async (req, res) => {
   }
 });
 
+router.post("/updateResourcePermission", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body) {
+      body.map(async (m) => {
+        const user = await User.findOne({ email: m.email });
+        if (user.resourcePermissions) {
+          user.resourcePermissions.push({
+            resourceId: m.resourceId,
+            permissions: m.permissions,
+          });
+        } else {
+          user.resourcePermissions = [
+            {
+              resourceId: m.resourceId,
+              permissions: m.permissions,
+            },
+          ];
+        }
+
+        user.save();
+      });
+
+      res
+        .send({
+          status: SUCCESS_CODE,
+          message: "Resource Permission updated!",
+        })
+        .status(200);
+    } else {
+      res
+        .send({ status: ERROR_CODE, message: "User doesn't exist!" })
+        .status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.get("/get-unverified", async (req, res) => {
   let body = req.body;
   try {
