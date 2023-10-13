@@ -107,9 +107,10 @@ router.post("/upload", upload, async (req, res) => {
             } else {
               body.folderPath = [];
               const data = await body.save();
+              resourceId = data._id;
               data.folderPath.push({ name: body.name, id: data._id });
               await data.save();
-              resourceId = data._id;
+             
             }
 
             res
