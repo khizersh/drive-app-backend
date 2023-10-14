@@ -225,6 +225,75 @@ router.post("/updateResourcePermission", async (req, res) => {
   }
 });
 
+router.post("/clearResourcePermission", async (req, res) => {
+  const body = req.body;
+
+  try {
+    const users = await User.find({});
+    users.map((user) => {
+      user.resourcePermissions = [];
+      user.save();
+    });
+
+    res.send({ status: SUCCESS_CODE, message: "Cleared!" }).status(200);
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
+router.post("/updateResourcePermissionAll", async (req, res) => {
+  const body = req.body;
+
+  try {
+    if (body.permissionList && body.resourceId) {
+      const users = await User.find({});
+
+      let finalUser = [];
+      users.map((user) => {
+        let isExist = body.exceptList.find((email) => user.email == email);
+        if (!isExist) {
+          finalUser.push(user);
+        }
+      });
+
+      finalUser.map((user) => {
+        if (user.resourcePermissions) {
+          user.resourcePermissions.push({
+            resourceId: body.resourceId,
+            permissions: body.permissionList,
+          });
+        } else {
+          user.resourcePermissions = [
+            {
+              resourceId: body.resourceId,
+              permissions: body.permissionList,
+            },
+          ];
+        }
+
+        user.save();
+      });
+
+      res
+        .send({
+          status: SUCCESS_CODE,
+          message: "Resource Permission updated!",
+        })
+        .status(200);
+    } else {
+      res
+        .send({ status: ERROR_CODE, message: "User doesn't exist!" })
+        .status(200);
+    }
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.get("/get-unverified", async (req, res) => {
   let body = req.body;
   try {

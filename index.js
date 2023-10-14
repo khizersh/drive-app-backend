@@ -12,16 +12,16 @@ const CollectionRoute = require("./routes/collection");
 const app = express();
 const cors = require("cors");
 
-// const username = "user";
-// const password = "25dI0ZINYU6rkiG5";
-// const cluster = "<cluster name>";
-// const dbname = "drive-app";
-
-
-const username = "bigbeat";
-const password = "bigbeat123";
+const username = "user";
+const password = "25dI0ZINYU6rkiG5";
 const cluster = "<cluster name>";
 const dbname = "drive-app";
+
+
+// const username = "bigbeat";
+// const password = "bigbeat123";
+// const cluster = "<cluster name>";
+// const dbname = "drive-app";
 
 
 
@@ -40,8 +40,8 @@ app.use("/file",FileRoute );
 app.use("/collection",CollectionRoute );
 
 
-// const mongoUrl = `mongodb+srv://${username}:${password}@cluster0.d7lfdb1.mongodb.net/${dbname}?retryWrites=true&w=majority`;
-const mongoUrl = `mongodb://${username}:${password}@ac-vwmr06o-shard-00-00.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-01.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-02.a1hrtd3.mongodb.net:27017/${dbname}?ssl=true&replicaSet=atlas-drspkn-shard-0&authSource=admin&retryWrites=true&w=majority`;
+const mongoUrl = `mongodb+srv://${username}:${password}@cluster0.d7lfdb1.mongodb.net/${dbname}?retryWrites=true&w=majority`;
+// const mongoUrl = `mongodb://${username}:${password}@ac-vwmr06o-shard-00-00.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-01.a1hrtd3.mongodb.net:27017,ac-vwmr06o-shard-00-02.a1hrtd3.mongodb.net:27017/${dbname}?ssl=true&replicaSet=atlas-drspkn-shard-0&authSource=admin&retryWrites=true&w=majority`;
 
 mongoose.set('strictQuery', false)
 mongoose.connect(
