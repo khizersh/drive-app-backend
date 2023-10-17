@@ -418,6 +418,26 @@ router.post("/getResourceByFolder", async (req, res) => {
   }
 });
 
+router.post("/deleteAllResource", async (req, res) => {
+  const body = req.body;
+
+  try {
+    
+      const folders = await Folder.find({});
+      folders.map(fol => {
+        fol.delete();
+      })
+      res
+        .send({ status: SUCCESS_CODE, message: "Deleted!" })
+        .status(200);
+    
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/getResourceByKeyword", async (req, res) => {
   const body = req.body;
 
