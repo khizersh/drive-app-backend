@@ -310,8 +310,11 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       if (body.isFolder === true) {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
-          isFolder: body.isFolder,
+          isFolder: true,
         }).populate("children");
+        res
+        .send({ status: SUCCESS_CODE, message: "success", data: folders })
+        .status(200);
       } else {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
@@ -330,6 +333,7 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       .status(200);
   }
 });
+
 router.post("/saveDate", async (req, res) => {
   const body = req.body;
 
