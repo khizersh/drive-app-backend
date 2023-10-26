@@ -1,3 +1,4 @@
+const Folder = require("../models/FolderSchema");
 const validateEmail = (email) => {
   let flag = false;
   if (email) {
@@ -8,6 +9,17 @@ const validateEmail = (email) => {
     flag = false;
   }
   return flag;
+};
+
+const returnListOfDeletingFolder = async (folder) => {
+  var finalArray = [folder._id];
+  if (folder._id) {
+    const folders = await Folder.find({ parentId: folder._id });
+    folders.map((fold) => {
+      finalArray.push(fold._id);
+    });
+  }
+  return finalArray;
 };
 
 function addHyphenToSlug(slug) {
@@ -38,4 +50,5 @@ module.exports = {
   validateEmail,
   convertToSlug,
   generateOtp,
+  returnListOfDeletingFolder
 };

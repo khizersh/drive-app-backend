@@ -4,7 +4,11 @@ const router = express.Router();
 const User = require("../models/UserSchema");
 const OTP = require("../models/OtpSchema");
 const Folder = require("../models/FolderSchema");
-const { validateEmail, generateOtp } = require("../service/commonService");
+const {
+  validateEmail,
+  generateOtp,
+  returnListOfDeletingFolder,
+} = require("../service/commonService");
 const { sendEmail } = require("../service/emailService");
 const { createCanvas, loadImage, Image } = require("canvas");
 const psd = require("psd");
@@ -185,6 +189,38 @@ router.post("/upload", upload, async (req, res) => {
   }
 });
 
+router.post("/deleteFolderAndSubResource", upload, async (req, res) => {
+  const body = req.body;
+  try {
+    if (body.userId) {
+      const user = await User.findById({ _id: body.userId });
+      if (user != null) {
+        const mainFolder = await Folder.findById({ _id: body.id });
+        if (mainFolder) {
+          const list = await returnListOfDeletingFolder(mainFolder);
+          list.map(async (ids) => {
+            await Folder.deleteOne({ _id: ids });
+          });
+          res
+            .send({ status: SUCCESS_CODE, message: "Successfully Deleted!", data: list })
+            .status(200);
+        } else {
+          res.send({ status: ERROR_CODE, message: "Not Found!" }).status(200);
+        }
+      } else {
+        res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+      }
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid Call!" }).status(200);
+    }
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/delete", upload, async (req, res) => {
   const body = req.body;
   try {
@@ -313,8 +349,8 @@ router.post("/getResourcesByRootParent", async (req, res) => {
           isFolder: true,
         }).populate("children");
         res
-        .send({ status: SUCCESS_CODE, message: "success", data: folders })
-        .status(200);
+          .send({ status: SUCCESS_CODE, message: "success", data: folders })
+          .status(200);
       } else {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
@@ -426,15 +462,11 @@ router.post("/deleteAllResource", async (req, res) => {
   const body = req.body;
 
   try {
-    
-      const folders = await Folder.find({});
-      folders.map(fol => {
-        fol.delete();
-      })
-      res
-        .send({ status: SUCCESS_CODE, message: "Deleted!" })
-        .status(200);
-    
+    const folders = await Folder.find({});
+    folders.map((fol) => {
+      fol.delete();
+    });
+    res.send({ status: SUCCESS_CODE, message: "Deleted!" }).status(200);
   } catch (error) {
     res
       .send({ status: ERROR_CODE, message: "Something went wrong!" })
