@@ -346,7 +346,8 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       if (body.isFolder === true) {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
-          isFolder: true,
+          rootFolder: true,
+          isFolder: true
         }).populate("children");
         res
           .send({ status: SUCCESS_CODE, message: "success", data: folders })
@@ -354,6 +355,7 @@ router.post("/getResourcesByRootParent", async (req, res) => {
       } else {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
+          rootFolder: true,
         }).populate("children");
         res
           .send({ status: SUCCESS_CODE, message: "success", data: folders })
