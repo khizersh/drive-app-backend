@@ -372,6 +372,32 @@ router.post("/getResourcesByRootParent", async (req, res) => {
   }
 });
 
+
+router.post("/getFoldersForSideBar", async (req, res) => {
+  const body = req.body;
+
+  try {
+    // if (body.homeParentId && body.email) {
+    if (body.homeParentId) {
+      var folders = [];
+      folders = await Folder.find({
+        homeParentId: body.homeParentId,
+        isFolder: true
+      }).populate("children");
+      res
+        .send({ status: SUCCESS_CODE, message: "success", data: folders })
+        .status(200);
+    } else {
+      res.send({ status: ERROR_CODE, message: "Invalid call!" }).status(200);
+    }
+  } catch (error) {
+    console.log("error : ", error);
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
 router.post("/saveDate", async (req, res) => {
   const body = req.body;
 

@@ -250,15 +250,15 @@ router.post("/updateResourcePermissionAll", async (req, res) => {
     if (body.permissionList && body.resourceId) {
       const users = await User.find({});
 
-      let finalUser = [];
-      users.map((user) => {
-        let isExist = body.exceptList.find((email) => user.email == email);
-        if (!isExist) {
-          finalUser.push(user);
-        }
-      });
+      // let finalUser = [];
+      // users.map((user) => {
+      //   let isExist = body.exceptList.find((email) => user.email == email);
+      //   if (!isExist) {
+      //     finalUser.push(user);
+      //   }
+      // });
 
-      finalUser.map((user) => {
+      users.map((user) => {
         if (user.resourcePermissions) {
           user.resourcePermissions.push({
             resourceId: body.resourceId,
