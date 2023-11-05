@@ -21,6 +21,24 @@ const returnListOfDeletingFolder = async (folder) => {
   }
   return finalArray;
 };
+const deleteFromParentChildrensList = async (id , isFolder) => {
+  const specificChildIds = [id];
+  const parentList = await Folder.find({
+    children: { $in: specificChildIds },
+  });
+
+  parentList.map(async (par) => {
+    let childrenList = par.children.filter((m) => m != id);
+    par.children = childrenList;
+    if(isFolder){
+      par.folderCount = par.folderCount - 1; 
+    }else{
+      par.resourcesCount = par.resourcesCount - 1;
+    }
+   
+    await par.save();
+  });
+};
 
 function addHyphenToSlug(slug) {
   return slug + "-";
@@ -50,5 +68,6 @@ module.exports = {
   validateEmail,
   convertToSlug,
   generateOtp,
-  returnListOfDeletingFolder
+  returnListOfDeletingFolder,
+  deleteFromParentChildrensList
 };

@@ -8,6 +8,7 @@ const {
   validateEmail,
   generateOtp,
   returnListOfDeletingFolder,
+  deleteFromParentChildrensList,
 } = require("../service/commonService");
 const { sendEmail } = require("../service/emailService");
 const { createCanvas, loadImage, Image } = require("canvas");
@@ -201,8 +202,16 @@ router.post("/deleteFolderAndSubResource", upload, async (req, res) => {
           list.map(async (ids) => {
             await Folder.deleteOne({ _id: ids });
           });
+
+          await deleteFromParentChildrensList(body.id , true)
+
+
           res
-            .send({ status: SUCCESS_CODE, message: "Successfully Deleted!", data: list })
+            .send({
+              status: SUCCESS_CODE,
+              message: "Successfully Deleted!",
+              data: list,
+            })
             .status(200);
         } else {
           res.send({ status: ERROR_CODE, message: "Not Found!" }).status(200);
@@ -220,6 +229,30 @@ router.post("/deleteFolderAndSubResource", upload, async (req, res) => {
       .status(200);
   }
 });
+// router.post("/findFolderWithChildren", async (req, res) => {
+//   const body = req.body;
+//   try {
+//     const specificChildIds = [body.id];
+//     console.log("specificChildIds :: ", specificChildIds);
+//     const mainFolder = await Folder.find({
+//       children: { $in: specificChildIds },
+//     });
+//     res
+//       .send({
+//         status: SUCCESS_CODE,
+//         message: "Successfully get!",
+//         data: mainFolder,
+//       })
+//       .status(200);
+//   } catch (error) {
+//     console.log("error : ", error);
+//     res
+//       .send({ status: ERROR_CODE, message: "Something went wrong!" })
+//       .status(200);
+//   }
+// });
+
+
 
 router.post("/delete", upload, async (req, res) => {
   const body = req.body;
@@ -229,6 +262,7 @@ router.post("/delete", upload, async (req, res) => {
       if (user != null) {
         const file = await Folder.find({ _id: body.id, userId: body.userId });
         if (file) {
+          await deleteFromParentChildrensList(body.id , false)
           await Folder.deleteOne({ _id: body.id });
           res
             .send({ status: SUCCESS_CODE, message: "Deleted successfully!" })
@@ -347,7 +381,7 @@ router.post("/getResourcesByRootParent", async (req, res) => {
         folders = await Folder.find({
           homeParentId: body.homeParentId,
           rootFolder: true,
-          isFolder: true
+          isFolder: true,
         }).populate("children");
         res
           .send({ status: SUCCESS_CODE, message: "success", data: folders })
@@ -372,7 +406,6 @@ router.post("/getResourcesByRootParent", async (req, res) => {
   }
 });
 
-
 router.post("/getFoldersForSideBar", async (req, res) => {
   const body = req.body;
 
@@ -382,7 +415,7 @@ router.post("/getFoldersForSideBar", async (req, res) => {
       var folders = [];
       folders = await Folder.find({
         homeParentId: body.homeParentId,
-        isFolder: true
+        isFolder: true,
       }).populate("children");
       res
         .send({ status: SUCCESS_CODE, message: "success", data: folders })
