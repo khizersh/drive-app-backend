@@ -49,6 +49,8 @@ router.post("/upload", upload, async (req, res) => {
     if (body.userId) {
       const user = await User.findById({ _id: body.userId });
       if (user != null) {
+        let create = moment(new Date()).format().split("+")[0].split("T")[0];
+        body.createdDate = create;
         if (!body.isFolder) {
           // UPLOADING IMAGE IF FILE PRESENT
           let myFile = req.file.originalname.split(".");
@@ -71,11 +73,7 @@ router.post("/upload", upload, async (req, res) => {
               user.firstName +
               ", " +
               moment(new Date()).format().split("+")[0].split("T").join(" | ");
-            let create = moment(new Date())
-              .format()
-              .split("+")[0]
-              .split("T")[0];
-            body.createdDate = create;
+
             body.addedBy = date;
             body.fileSize = body.fileSize;
             body.lastUpdatedBy = date;
@@ -203,8 +201,7 @@ router.post("/deleteFolderAndSubResource", upload, async (req, res) => {
             await Folder.deleteOne({ _id: ids });
           });
 
-          await deleteFromParentChildrensList(body.id , true)
-
+          await deleteFromParentChildrensList(body.id, true);
 
           res
             .send({
@@ -252,8 +249,6 @@ router.post("/deleteFolderAndSubResource", upload, async (req, res) => {
 //   }
 // });
 
-
-
 router.post("/delete", upload, async (req, res) => {
   const body = req.body;
   try {
@@ -262,7 +257,7 @@ router.post("/delete", upload, async (req, res) => {
       if (user != null) {
         const file = await Folder.find({ _id: body.id, userId: body.userId });
         if (file) {
-          await deleteFromParentChildrensList(body.id , false)
+          await deleteFromParentChildrensList(body.id, false);
           await Folder.deleteOne({ _id: body.id });
           res
             .send({ status: SUCCESS_CODE, message: "Deleted successfully!" })
@@ -363,6 +358,39 @@ router.post("/deleteAllResource", async (req, res) => {
     });
 
     res.send({ status: SUCCESS_CODE, message: "Deleted all!" }).status(200);
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+router.post("/changeDateAll", async (req, res) => {
+  const body = req.body;
+
+  try {
+    const folders = await Folder.find({});
+    folders.map(async (fold) => {
+      fold.createdDate = body.date;
+      await fold.save();
+    });
+
+    res.send({ status: SUCCESS_CODE, message: "Change all!" }).status(200);
+  } catch (error) {
+    res
+      .send({ status: ERROR_CODE, message: "Something went wrong!" })
+      .status(200);
+  }
+});
+
+router.post("/changeDateById", async (req, res) => {
+  const body = req.body;
+
+  try {
+    const fold = await Folder.findOne({ _id: body.id });
+    fold.createdDate = body.date;
+    await fold.save();
+
+    res.send({ status: SUCCESS_CODE, message: "Change all!" }).status(200);
   } catch (error) {
     res
       .send({ status: ERROR_CODE, message: "Something went wrong!" })
